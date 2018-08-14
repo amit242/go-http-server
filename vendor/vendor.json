@@ -33,6 +33,18 @@
 			"revisionTime": "2017-10-04T17:02:40Z"
 		},
 		{
+			"checksumSHA1": "s6eyIXpJ7VAU06FM27GcEBM/5lo=",
+			"path": "github.com/lib/pq",
+			"revision": "90697d60dd844d5ef6ff15135d0203f65d2f53b8",
+			"revisionTime": "2018-05-23T17:54:26Z"
+		},
+		{
+			"checksumSHA1": "AU3fA8Sm33Vj9PBoRPSeYfxLRuE=",
+			"path": "github.com/lib/pq/oid",
+			"revision": "90697d60dd844d5ef6ff15135d0203f65d2f53b8",
+			"revisionTime": "2018-05-23T17:54:26Z"
+		},
+		{
 			"checksumSHA1": "ZUOd8OUOp+xdpB7p4w/O86Y8wyc=",
 			"path": "github.com/manucorporat/sse",
 			"revision": "c142f0f1baea5cef7f98a8a6c222f6134368c1f5"
