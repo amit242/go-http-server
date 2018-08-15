@@ -1,0 +1,6 @@
+#!/bin/sh
+ip="$(ifconfig | grep -A 1 'eth0' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)"
+host="$(hostname)"
+#echo "${ip}"
+#echo "${host}"
+curl -X POST "https://boiling-ocean-81175.herokuapp.com/ipaddress?ipaddress=${ip}&host=${host}"
