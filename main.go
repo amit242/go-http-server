@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,18 +15,8 @@ import (
 )
 
 var (
-	repeat int
-	db     *sql.DB
+	db *sql.DB
 )
-
-func repeatFunc(c *gin.Context) {
-	var buffer bytes.Buffer
-	log.Print("repeatFunc | value of repeat:", repeat)
-	for i := 0; i < repeat; i++ {
-		buffer.WriteString("Hello from Go!\n")
-	}
-	c.String(http.StatusOK, buffer.String())
-}
 
 func dbFunc(c *gin.Context) {
 	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)"); err != nil {
@@ -71,13 +59,6 @@ func main() {
 	}
 
 	var err error
-	tStr := os.Getenv("REPEAT")
-	repeat, err = strconv.Atoi(tStr)
-	log.Print("main | value of REPEAT:", tStr)
-	if err != nil {
-		log.Print("Error converting $REPEAT to an int: - Using default", err)
-		repeat = 5
-	}
 
 	dburl := os.Getenv("DATABASE_URL")
 	log.Print("main | value of DATABASE_URL:", dburl)
@@ -100,13 +81,62 @@ func main() {
 		log.Print("AMIT:: mark was called")
 	})
 
-	router.GET("/repeat", repeatFunc)
 	router.GET("/db", dbFunc)
 
-	/*router.POST("/mark", func(c *gin.Context) {
-		c.String(http.StatusOK, string(blackfriday.MarkdownBasic([]byte("**hi!**"))))
-		log.Print("AMIT:: mark was called")
-	})*/
+	router.POST("/ipaddress", func(c *gin.Context) {
+		ip := c.Query("ipaddress")
+		hostName := c.Query("host")
+		log.Printf("AMIT:: /ipaddress was called with ip=%s, host=%s", ip, hostName)
+
+		if ip == "" {
+			c.String(http.StatusBadRequest, string("no ip was present in query string"))
+			return
+		}
+
+		if hostName == "" {
+			log.Printf("hostname not given for ip=%s", ip)
+		}
+
+		if _, err := db.Exec("CREATE TABLE IF NOT EXISTS piinfo (ip char(15), hostname varchar(50), timestamp timestamp)"); err != nil {
+			log.Print("Error creating database table:", err)
+			c.String(http.StatusInternalServerError,
+				fmt.Sprintf("Error creating database table: %q", err))
+			return
+		}
+
+		if _, err := db.Exec(fmt.Sprintf("INSERT INTO piinfo VALUES (%s, %s, now())", ip, hostName)); err != nil {
+			c.String(http.StatusInternalServerError,
+				fmt.Sprintf("table insert failed for table piinfo: %q", err))
+			return
+		}
+
+		c.String(http.StatusOK, string(fmt.Sprintf("saved ip=%s, host=%s", ip, hostName)))
+
+	})
+
+	router.GET("/ipaddress", func(c *gin.Context) {
+		rows, err := db.Query("SELECT * FROM piinfo order by timestamp desc limit 5")
+		if err != nil {
+			c.String(http.StatusInternalServerError,
+				fmt.Sprintf("Error reading piinfo: %q", err))
+			return
+		}
+
+		defer rows.Close()
+		for rows.Next() {
+			var (
+				ip        string
+				hostname  string
+				timestamp time.Time
+			)
+			if err := rows.Scan(&ip, &hostname, &timestamp); err != nil {
+				c.String(http.StatusInternalServerError,
+					fmt.Sprintf("Error scanning piinfo: %q", err))
+				return
+			}
+			c.String(http.StatusOK, fmt.Sprintf("ip: %s,\t hostname:%s, \t last updated:%s\n", ip, hostname, timestamp.String()))
+		}
+	})
 
 	router.Run(":" + port)
 }
