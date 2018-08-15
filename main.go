@@ -134,7 +134,7 @@ func main() {
 					fmt.Sprintf("Error scanning piinfo: %q", err))
 				return
 			}
-			c.String(http.StatusOK, fmt.Sprintf("ip: %s,\t hostname:%s, \t last updated:%s\n", ip, hostname, timestamp.String()))
+			c.String(http.StatusOK, fmt.Sprintf("ip: %s,\t hostname: %s, \t last updated: %s\n", ip, hostname, timestamp.String()))
 		}
 	})
 
