@@ -104,7 +104,7 @@ func main() {
 			return
 		}
 
-		if _, err := db.Exec(fmt.Sprintf("INSERT INTO piinfo VALUES ('%s', '%s', now())", ip, hostName)); err != nil {
+		if _, err := db.Exec("INSERT INTO piinfo VALUES ($1, $2, now())", ip, hostName); err != nil {
 			c.String(http.StatusInternalServerError,
 				fmt.Sprintf("table insert failed for table piinfo: %q", err))
 			return
